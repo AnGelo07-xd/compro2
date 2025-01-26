@@ -1,0 +1,7 @@
+------Coffee Order Receipt------
+2 x Latte - 140.00php
+--------------------------
+Subtotal: 140.00php
+VAT (12%): 16.80php
+Grand Total: 156.80php
+--------------------------
