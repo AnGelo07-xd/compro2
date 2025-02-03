@@ -12,7 +12,7 @@ public class Kape {
         double totalCost = 0.0;
         int[] quantities = new int[4];
 
-        // 2D array to store coffee names and prices
+
         String[][] coffeeMenu = {
                 {"Espresso", "50.0"},
                 {"Latte", "70.0"},
@@ -43,10 +43,10 @@ public class Kape {
                 int quantity = input.nextInt();
 
                 quantities[menu - 1] += quantity;
-                totalCost += Double.parseDouble(coffeeMenu[menu - 1][1]) * quantity; // Update total cost
+                totalCost += Double.parseDouble(coffeeMenu[menu - 1][1]) * quantity;
             } catch (Exception e) {
                 System.out.println("Invalid input! Please enter a valid number.");
-                input.nextLine(); // Clear the invalid input
+                input.nextLine();
             }
             System.out.println();
         }
