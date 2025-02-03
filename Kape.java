@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -9,17 +10,23 @@ public class Kape {
 
         int menu = 0;
         double totalCost = 0.0;
-        String orders = "";
+        int[] quantities = new int[4];
+
+        // 2D array to store coffee names and prices
+        String[][] coffeeMenu = {
+                {"Espresso", "50.0"},
+                {"Latte", "70.0"},
+                {"Cappuccino", "65.0"},
+                {"Mocha", "80.0"}
+        };
 
         while (true) {
-            System.out.print("""
-                    ------KAPE MENU-----
-                    1. Espresso - 50.0php
-                    2. Latte - 70.0php
-                    3. Cappuccino - 65.0php
-                    4. Mocha - 80.0php
-                    0. Finish order 
-                    Choose your coffee (1-4, or 0 to finish):\s  """);
+            System.out.print("------KAPE MENU-----\n");
+            for (int i = 0; i < coffeeMenu.length; i++) {
+                System.out.println((i + 1) + ". " + coffeeMenu[i][0] + " - " + coffeeMenu[i][1] + "php");
+            }
+            System.out.println("0. Finish order");
+            System.out.print("Choose your coffee (1-4, or 0 to finish): ");
 
             try {
                 menu = input.nextInt();
@@ -35,48 +42,31 @@ public class Kape {
                 System.out.print("Enter quantity: ");
                 int quantity = input.nextInt();
 
-                double price = 0.0;
-                String kapeName = "";
-
-                switch (menu) {
-                    case 1:
-                        kapeName = "Espresso";
-                        price = 50.0;
-                        break;
-                    case 2:
-                        kapeName = "Latte";
-                        price = 70.0;
-                        break;
-                    case 3:
-                        kapeName = "Cappuccino";
-                        price = 65.0;
-                        break;
-                    case 4:
-                        kapeName = "Mocha";
-                        price = 80.0;
-                        break;
-                    default:
-                        System.out.println("Invalid Number! Try Again");
-                        continue;
-
-                }
-                totalCost += price * quantity;
-                orders += quantity + " x " + kapeName + " - " + String.format("%.2f", price * quantity) + "php\n";
+                quantities[menu - 1] += quantity;
+                totalCost += Double.parseDouble(coffeeMenu[menu - 1][1]) * quantity; // Update total cost
             } catch (Exception e) {
                 System.out.println("Invalid input! Please enter a valid number.");
-                input.nextLine();
+                input.nextLine(); // Clear the invalid input
             }
             System.out.println();
         }
-        printReceipt(totalCost, orders);
+
+        printReceipt(totalCost, quantities, coffeeMenu);
+        writeReceiptToFile(totalCost, quantities, coffeeMenu);
         readReceiptFromFile();
     }
-    public static void printReceipt(double totalCost, String orders){
+
+    public static void printReceipt(double totalCost, int[] quantities, String[][] coffeeMenu) {
         double vat = totalCost * 0.12;
         double grandTotalCost = totalCost + vat;
 
         System.out.println("------Coffee Order Receipt------");
-        System.out.print(orders);
+        for (int i = 0; i < coffeeMenu.length; i++) {
+            if (quantities[i] > 0) {
+                double itemTotal = quantities[i] * Double.parseDouble(coffeeMenu[i][1]);
+                System.out.println(quantities[i] + "x " + coffeeMenu[i][0] + " - " +String.format("%.2f", itemTotal) + "php");
+            }
+        }
         System.out.println("--------------------------");
         System.out.println("Subtotal: " + String.format("%.2f", totalCost) + "php");
         System.out.println("VAT (12%): " + String.format("%.2f", vat) + "php");
@@ -84,15 +74,40 @@ public class Kape {
         System.out.println("--------------------------");
     }
 
+    public static void writeReceiptToFile(double totalCost, int[] quantities, String[][] coffeeMenu) {
+        double vat = totalCost * 0.12;
+        double grandTotalCost = totalCost + vat;
+        String receipt = "------Coffee Order Receipt------\n";
+
+        for (int i = 0; i < coffeeMenu.length; i++) {
+            if (quantities[i] > 0) {
+                double itemTotal = quantities[i] * Double.parseDouble(coffeeMenu[i][1]);
+                receipt += String.format("%dx %s - %.2fphp%n", quantities[i], coffeeMenu[i][0], itemTotal);
+            }
+        }
+        receipt += "--------------------------\n" +
+                "Subtotal: " + String.format("%.2f", totalCost) + "php\n" +
+                "VAT (12%): " + String.format("%.2f", vat) + "php\n" +
+                "Grand Total: " + String.format("%.2f", grandTotalCost) + "php\n" +
+                "--------------------------\n";
+
+        try (FileWriter writer = new FileWriter("CoffeeReceipt.txt")) {
+            writer.write(receipt);
+            System.out.println("Receipt has been written to CoffeeReceipt.txt");
+        } catch (IOException e) {
+            System.out.println("An error occurred while writing the receipt to the file.");
+            e.printStackTrace();
+        }
+    }
     public static void readReceiptFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader("CoffeeReceipt.txt"))) {
             String line;
-            System.out.println("\nReceipt has been saved from CoffeeReceipt.txt:");
+            System.out.println("\nReceipt has been read from CoffeeReceipt.txt:");
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println("An error occurred while reading the file: " + e.getMessage());
         }
     }
 }
